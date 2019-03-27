@@ -1,6 +1,11 @@
-import Image
+from PIL import Image
 import numpy as np
+import glob
+image_list = []
 
-im = np.array(Image.open(src)).astype('float32')/255
+for filename in glob.glob('data/*.tiff'): #assuming tiff
+    im=Image.open(filename)
+    image_list.append(im)
 
-print(im.shape)
+for i in image_list:
+    print(i)
