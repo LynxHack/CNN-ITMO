@@ -43,6 +43,7 @@ def imageimport():
     return train_X, test_X
 
 
+
 def U_net(pretrained_weights = None,input_size = (512,512,1)):
     #Encoding
     
