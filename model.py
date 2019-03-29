@@ -133,7 +133,8 @@ def U_net(pretrained_weights = None,input_size = (512,512,3)):
     conv10 = Conv2D(32, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv10)
     #conv9 = Conv2D(2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9) 
     
-    ## To generate output, use 3 filters with size of 3*3                                                                                                                                     
+    ## To generate output, use 3 filters with size of 3*3      
+    ## Use Softmax here (changed by zz)                                                                                                                                     
     OutImage = Conv2D(3, 3, activation = 'softmax')(conv10)
 
     model = Model(input = inputs, output = OutImage)
