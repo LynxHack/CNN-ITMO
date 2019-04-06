@@ -9,13 +9,13 @@ import os
 # import skimage.io as io
 # import skimage.transform as trans
 
-# Import Keras
-# from keras.models import *
-# from keras.layers import *
-# from keras.optimizers import *
-# from keras.callbacks import ModelCheckpoint, LearningRateScheduler
-# from keras import backend as keras
-# from keras.preprocessing import image
+import keras
+from keras.models import *
+from keras.layers import *
+from keras.optimizers import *
+from keras.callbacks import ModelCheckpoint, LearningRateScheduler
+from keras import backend as keras
+from keras.preprocessing import image
 
 ## YUV Extraction from RGB
 #import cv2 
@@ -68,7 +68,7 @@ def output_image():
     return train_Y, test_Y
 
     ##The depth is changed to 3 for color image
-def U_net(pretrained_weights = None,input_size = (512,512,3)):
+def U_net(pretrained_weights = None, input_size = (512,512,3)):
     ##Encoding
     ##32 kernels for the first block with size 3*3  
     inputs = Input(input_size)
@@ -94,42 +94,42 @@ def U_net(pretrained_weights = None,input_size = (512,512,3)):
     pool4 = MaxPooling2D(pool_size=(2, 2),strides=2)(conv4)
 
     ##512 kernels for the fifth block
-     conv5 = Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool4)
-     conv5 = Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv5)
+    conv5 = Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool4)
+    conv5 = Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv5)
 #    drop5 = Dropout(0.5)(conv5)
-     pool5 = MaxPooling2D(pool_size=(2, 2),strides=2)(conv5)
+    pool5 = MaxPooling2D(pool_size=(2, 2),strides=2)(conv5)
 
     ##1024 kernel for the 6th block. Pass to decoder
-     conv_cross = Conv2D(1024, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool5)
-     conv_cross = Conv2D(1024, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv_cross)
+    conv_cross = Conv2D(1024, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool5)
+    conv_cross = Conv2D(1024, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv_cross)
 
     ##Decoding 
     ##transposed conv
     ##upsample fiter size 4 (2*2),strides (2) 
-    up6 = Conv2D(512, 2, activation = 'relu', strides=2, padding = 'valid', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv_cross
-    merge6 = concatenate([conv5, up6], axis =3)
-    conv6 = Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge6)
+    up6 = Conv2D(512, 2, activation = 'relu', strides=2, padding = 'valid', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv_cross))
+    # merge6 = concatenate([conv5, up6], axis =3)
+    conv6 = Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(up6)
     conv6 = Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv6)
                                                                                        
-    up7 = Conv2D(256, 2, activation = 'relu', strides=2; padding = 'valid', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv6))
-    merge7 = concatenate([conv4,up7], axis = 3)
-    conv7 = Conv2D(256, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge7)
+    up7 = Conv2D(256, 2, activation = 'relu', strides=2, padding = 'valid', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv6))
+    # merge7 = concatenate([conv4,up7], axis = 3)
+    conv7 = Conv2D(256, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(up7)
     conv7 = Conv2D(256, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv7)
 
-    up8 = Conv2D(128, 2, activation = 'relu', strides=2; padding = 'valid', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv7))
-    merge8 = concatenate([conv3,up8], axis = 3)
-    conv8 = Conv2D(128, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge8)
+    up8 = Conv2D(128, 2, activation = 'relu', strides=2, padding = 'valid', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv7))
+    # merge8 = concatenate([conv3,up8], axis = 3)
+    conv8 = Conv2D(128, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(up8)
     conv8 = Conv2D(128, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv8)
 
-    up9 = Conv2D(64, 2, activation = 'relu', strides=2; padding = 'valid', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv8))
-    merge9 = concatenate([conv2,up9], axis = 3)
-    conv9 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge9)
+    up9 = Conv2D(64, 2, activation = 'relu', strides=2, padding = 'valid', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv8))
+    # merge9 = concatenate([conv2,up9], axis = 3)
+    conv9 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(up9)
     conv9 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
-    conv9 = Conv2D(2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
+    # conv9 = Conv2D(2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
     
-    up10 = Conv2D(32, 2, activation = 'relu', strides=2; padding = 'valid', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv9))
-    merge10 = concatenate([conv1,up10], axis = 3)
-    conv10 = Conv2D(32, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge10)
+    up10 = Conv2D(32, 2, activation = 'relu', strides=2, padding = 'valid', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv9))
+    # merge10 = concatenate([conv1,up10], axis = 3)
+    conv10 = Conv2D(32, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(up10)
     conv10 = Conv2D(32, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv10)
     #conv9 = Conv2D(2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9) 
     
@@ -137,13 +137,17 @@ def U_net(pretrained_weights = None,input_size = (512,512,3)):
     ## Use Softmax here (changed by zz)                                                                                                                                     
     OutImage = Conv2D(3, 3, activation = 'softmax')(conv10)
 
-    model = Model(input = inputs, output = OutImage)
-
-#     model.compile(optimizer = Adam(lr = 1e-4), loss = 'binary_crossentropy', metrics = ['accuracy'])
-    
-#     #model.summary()
+    model = Model(input = inputs, output = OutImage, name='Reinhardt Predication')
+    model.compile(optimizer = SGD(lr=0.01, momentum=0.0, decay=0.0), loss = 'binary_crossentropy', metrics = ['accuracy'])
 
 #     if(pretrained_weights):
 #     	model.load_weights(pretrained_weights)
+
+    model.summary()
+    return model
+#     model.compile(optimizer = Adam(lr = 1e-4), loss = 'binary_crossentropy', metrics = ['accuracy'])
+    
+
+
 
 #     return model

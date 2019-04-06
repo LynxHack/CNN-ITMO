@@ -1,14 +1,30 @@
 ## TODO, write training code
 
 from model import *
-
+from keras.preprocessing.image import ImageDataGenerator
 # Test Run
 
 print("Input Data")
-train_X, test_X = input_image()
+trainX, testX = input_image()
 
 print("Output Data")
-train_Y, test_Y = output_image()
+trainY, testY = output_image()
+
+# Begin Training
+epochs = 100
+batchsize = 2
+
+# construct the training image generator for data augmentation
+aug = ImageDataGenerator(rotation_range=20, zoom_range=0.15,
+	width_shift_range=0.2, height_shift_range=0.2, shear_range=0.15,
+	horizontal_flip=True, fill_mode="nearest")
+
+model = U_net()
+
+# train the network
+H = model.fit_generator(aug.flow(trainX, trainY, batch_size=batchsize),
+	validation_data=(testX, testY), steps_per_epoch=len(trainX) // batchsize,
+	epochs=epochs)
 
 
 # model = U_net()
