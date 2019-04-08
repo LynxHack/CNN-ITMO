@@ -6,7 +6,6 @@ from keras.preprocessing.image import ImageDataGenerator
 # Test Run
 from PIL import Image
 # 'GroundTruth/*.tiff'
-from cv2 import *
 # print("Input Data")
 # trainX, testX = load_image('data/input/*.png', 1.0)
 # print("Output Data")
@@ -16,15 +15,28 @@ from cv2 import *
 # epochs = 100
 # batchsize = 32
 
-# Load Model
+# Create Model
 model = U_net()
 
-train_generator = image_gen(inputfile='data/input/*.png', 
-							outputfile='data/output/*.png',
-							n_chunks=19)
-model.fit_generator(train_generator,steps_per_epoch=19, epochs=1)
+# Load Model
+# model = load_model('itmo.h5')
 
 
+train_generator = image_gen(inputfile='data/train/input/*.png', 
+							outputfile='data/train/output/*.png',
+							n_chunks=70)
+
+test_generator = validation_image_gen(inputfile='data/test/input/*.png', 
+							outputfile='data/test/output/*.png',
+							n_chunks=70)
+
+model.fit_generator(generator=train_generator,
+					validation_data=test_generator,
+					validation_steps=10,
+					steps_per_epoch=10, 
+					epochs=10,
+					verbose=2)
+model.save('itmo.h5')  # creates a HDF5 file 'my_model.h5'
 # def myFunc(image):
 #     img = np.array(image)
 #     imgYCC = cv2.cvtColor(img, cv2.COLOR_BGR2YCR_CB)
