@@ -211,8 +211,8 @@ def U_net(pretrained_weights = None, input_size = (512,512,3)):
     OutImage = Conv2DTranspose(3, 1, activation = 'softmax')(conv10)
 
     model = Model(input = inputs, output = OutImage, name='Reinhardt Predication')
-    model.compile(optimizer = SGD(lr=0.01, momentum=0.0, decay=0.0), loss = 'binary_crossentropy', metrics = ['accuracy'])
-
+    model.compile(optimizer = SGD(lr=0.01, momentum=0.0, decay=0.0), loss = 'mean_squared_error', metrics = ['accuracy'])
+#   Calculate the mean square error
 #     if(pretrained_weights):
 #     	model.load_weights(pretrained_weights)
 
