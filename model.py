@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 
 # Scikit
 import numpy as np 
+from numpy import array
 import os
 # import skimage.io as io
 # import skimage.transform as trans
@@ -20,54 +21,92 @@ from keras.preprocessing import image
 ## YUV Extraction from RGB
 #import cv2 
 
-def input_image():
+# def input_image():
+#     image_list = []
+
+#     for filename in glob.glob('InputData/*.tiff'): #assuming tiff
+#         im=Image.open(filename)
+#         image_list.append(im)
+
+#     ## Convert into YUV then extract luma info, append into training and test set data array for one epoch
+#     YUV_list = []
+#     for img in image_list:
+#         img_y, img_b, img_r = img.convert('YCbCr').split()
+#         img_y_np = [np.asarray(img_y).astype(float) // 255.0]
+#         YUV_list.append(img_y_np)
+#         # print(img_y_np)
+
+
+#     ## Split to training and test sets
+#     n = len(YUV_list)
+#     ratio = 1
+#     train_X = np.asarray(YUV_list[0 : round(ratio * n)])
+#     test_X = np.asarray(YUV_list[round(ratio * n) + 1: n - 1])
+
+#     return train_X.reshape(512,512,1), test_X.reshape(512,512,1)
+
+def image_gen(inputfile, outputfile, n_chunks):
+    image_list_input = []
+    image_list_output = []
+    for filename in glob.glob(inputfile): #assuming tiff
+        im=Image.open(filename)
+        image_list_input.append(im)
+
+    for filename in glob.glob(outputfile): #assuming tiff
+        im=Image.open(filename)
+        image_list_output.append(im)
+
+    ## Convert into YUV append into X and y set data array for one epoch
+    print('generator initiated')
+    for idx in range(0, len(image_list_input), n_chunks): ##19 chunks of 41 images
+        imagebatch_in = image_list_input[idx:idx + n_chunks]
+        imagebatch_out = image_list_input[idx:idx + n_chunks]
+        print('Grabbing ', len(imagebatch_in), ' files')
+        YUV_list = []
+        for img in imagebatch_in:
+            img_val = np.asarray(img.convert('YCbCr')).astype(float)
+            YUV_list.append(img_val)
+            X = np.asarray(YUV_list)
+
+        YUV_list = []
+        for img in imagebatch_out:
+            img_val = np.asarray(img.convert('YCbCr')).astype(float)
+            YUV_list.append(img_val)
+
+            y = np.asarray(YUV_list) 
+        yield X, y
+
+        print('generator yielded a batch starting from image #%d' % idx)
+
+
+def load_image(filename, ratio):
     image_list = []
 
-    for filename in glob.glob('InputData/*.tiff'): #assuming tiff
+    for filename in glob.glob(filename): #assuming tiff
         im=Image.open(filename)
         image_list.append(im)
+
+    print(len(image_list),': number of images')
 
     ## Convert into YUV then extract luma info, append into training and test set data array for one epoch
     YUV_list = []
     for img in image_list:
-        img_y, img_b, img_r = img.convert('YCbCr').split()
-        img_y_np = np.asarray(img_y).astype(float)
-        YUV_list.append(img_y_np)
-        print(img_y_np)
-
-
-    ## Split to training and test sets
-    n = len(YUV_list)
-    ratio = 0.8
-    train_X = YUV_list[0 : round(ratio * n)]
-    test_X = YUV_list[round(ratio * n) + 1: n - 1]
-
-    return train_X, test_X
-
-def output_image():
-    image_list = []
-
-    for filename in glob.glob('GroundTruth/*.tiff'): #assuming tiff
-        im=Image.open(filename)
-        image_list.append(im)
-
-    ## Convert into YUV then extract luma info, append into training and test set data array for one epoch
-    YUV_list = []
-    for img in image_list:
-        img_y, img_b, img_r = img.convert('YCbCr').split()
-        img_y_np = np.asarray(img_y).astype(float)
-        YUV_list.append(img_y_np)
-        print(img_y_np)
+        # img_y, img_b, img_r = img.convert('YCbCr').split()
+        img_val = np.asarray(img.convert('YCbCr')).astype(float)
+        # img_val = np.asarray([np.asarray(img_y).astype(float), 
+        #                       np.asarray(img_b).astype(float), 
+        #                       np.asarray(img_r).astype(float)]) //255.0
+        YUV_list.append(img_val)
+        # print(img_y_np)
 
     ## Split to training and test sets outputs
     n = len(YUV_list)
-    ratio = 0.8
-    train_Y = YUV_list[0 : round(ratio * n)]
-    test_Y = YUV_list[round(ratio * n) + 1: n - 1]
+    train = np.asarray(YUV_list[0 : round(ratio * n)])
+    test = np.asarray(YUV_list[round(ratio * n) + 1: n - 1]) 
 
-    return train_Y, test_Y
+    return train, test
 
-    ##The depth is changed to 3 for color image
+
 def U_net(pretrained_weights = None, input_size = (512,512,3)):
     ##Encoding
     ##32 kernels for the first block with size 3*3  
@@ -106,36 +145,36 @@ def U_net(pretrained_weights = None, input_size = (512,512,3)):
     ##Decoding 
     ##transposed conv
     ##upsample fiter size 4 (2*2),strides (2) 
-    up6 = Conv2D(512, 2, activation = 'relu', strides=2, padding = 'valid', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv_cross))
-    # merge6 = concatenate([conv5, up6], axis =3)
-    conv6 = Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(up6)
-    conv6 = Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv6)
+    up6 = Conv2DTranspose(512, 2, activation = 'relu', strides=2, padding = 'valid', kernel_initializer = 'he_normal')(conv_cross)##(UpSampling2D(size = (2,2))(conv_cross))
+    merge6 = concatenate([conv5, up6], axis = 3)
+    #conv6 = Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge6)
+    conv6 = Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge6)
                                                                                        
-    up7 = Conv2D(256, 2, activation = 'relu', strides=2, padding = 'valid', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv6))
-    # merge7 = concatenate([conv4,up7], axis = 3)
-    conv7 = Conv2D(256, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(up7)
-    conv7 = Conv2D(256, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv7)
+    up7 = Conv2DTranspose(256, 2, activation = 'relu', strides=2, padding = 'valid', kernel_initializer = 'he_normal')(conv6)##(UpSampling2D(size = (2,2))(conv6))
+    merge7 = concatenate([conv4,up7], axis = 3)
+    conv7 = Conv2DTranspose(256, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge7)
+    # conv7 = Conv2DTranspose(256, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv7)
 
-    up8 = Conv2D(128, 2, activation = 'relu', strides=2, padding = 'valid', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv7))
-    # merge8 = concatenate([conv3,up8], axis = 3)
-    conv8 = Conv2D(128, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(up8)
-    conv8 = Conv2D(128, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv8)
+    up8 = Conv2DTranspose(128, 2, activation = 'relu', strides=2, padding = 'valid', kernel_initializer = 'he_normal')(conv7)##(UpSampling2D(size = (2,2))(conv7))
+    merge8 = concatenate([conv3,up8], axis = 3)
+    conv8 = Conv2DTranspose(128, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge8)
+    # conv8 = Conv2DTranspose(128, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv8)
 
-    up9 = Conv2D(64, 2, activation = 'relu', strides=2, padding = 'valid', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv8))
-    # merge9 = concatenate([conv2,up9], axis = 3)
-    conv9 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(up9)
-    conv9 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
+    up9 = Conv2DTranspose(64, 2, activation = 'relu', strides=2, padding = 'valid', kernel_initializer = 'he_normal')(conv8)##(UpSampling2D(size = (2,2))(conv8))
+    merge9 = concatenate([conv2,up9], axis = 3)
+    conv9 = Conv2DTranspose(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge9)
+    # conv9 = Conv2DTranspose(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
     # conv9 = Conv2D(2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
     
-    up10 = Conv2D(32, 2, activation = 'relu', strides=2, padding = 'valid', kernel_initializer = 'he_normal')(UpSampling2D(size = (2,2))(conv9))
-    # merge10 = concatenate([conv1,up10], axis = 3)
-    conv10 = Conv2D(32, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(up10)
-    conv10 = Conv2D(32, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv10)
+    up10 = Conv2DTranspose(32, 2, activation = 'relu', strides=2, padding = 'valid', kernel_initializer = 'he_normal')(conv9)##(UpSampling2D(size = (2,2))(conv9))
+    merge10 = concatenate([conv1,up10], axis = 3)
+    conv10 = Conv2DTranspose(32, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge10)
+    # conv10 = Conv2DTranspose(32, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv10)
     #conv9 = Conv2D(2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9) 
     
     ## To generate output, use 3 filters with size of 3*3      
     ## Use Softmax here (changed by zz)                                                                                                                                     
-    OutImage = Conv2D(3, 3, activation = 'softmax')(conv10)
+    OutImage = Conv2DTranspose(3, 1, activation = 'softmax')(conv10)
 
     model = Model(input = inputs, output = OutImage, name='Reinhardt Predication')
     model.compile(optimizer = SGD(lr=0.01, momentum=0.0, decay=0.0), loss = 'binary_crossentropy', metrics = ['accuracy'])

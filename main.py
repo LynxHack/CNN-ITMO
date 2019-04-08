@@ -1,48 +1,61 @@
 ## TODO, write training code
 
 from model import *
+# from datagen import *
 from keras.preprocessing.image import ImageDataGenerator
 # Test Run
-
-print("Input Data")
-trainX, testX = input_image()
-
-print("Output Data")
-trainY, testY = output_image()
+from PIL import Image
+# 'GroundTruth/*.tiff'
+from cv2 import *
+# print("Input Data")
+# trainX, testX = load_image('data/input/*.png', 1.0)
+# print("Output Data")
+# trainY, testY = load_image('data/output/*.png', 1.0)
 
 # Begin Training
-epochs = 100
-batchsize = 2
+# epochs = 100
+# batchsize = 32
 
-# construct the training image generator for data augmentation
-aug = ImageDataGenerator(rotation_range=20, zoom_range=0.15,
-	width_shift_range=0.2, height_shift_range=0.2, shear_range=0.15,
-	horizontal_flip=True, fill_mode="nearest")
-
+# Load Model
 model = U_net()
 
-# train the network
-H = model.fit_generator(aug.flow(trainX, trainY, batch_size=batchsize),
-	validation_data=(testX, testY), steps_per_epoch=len(trainX) // batchsize,
-	epochs=epochs)
+train_generator = image_gen(inputfile='data/input/*.png', 
+							outputfile='data/output/*.png',
+							n_chunks=19)
+model.fit_generator(train_generator,steps_per_epoch=19, epochs=1)
 
 
-# model = U_net()
-# model_checkpoint = ModelCheckpoint('unet_membrane.hdf5', monitor='loss',verbose=1, save_best_only=True)
+# def myFunc(image):
+#     img = np.array(image)
+#     imgYCC = cv2.cvtColor(img, cv2.COLOR_BGR2YCR_CB)
+#     return Image.fromarray(imgYCC)
 
-# data_gen_args = dict(rotation_range=0.2,
-#                     width_shift_range=0.05,
-#                     height_shift_range=0.05,
-#                     shear_range=0.05,
-#                     zoom_range=0.05,
-#                     horizontal_flip=True,
-#                     fill_mode='nearest')
-# myGene = trainGenerator(2,'data/membrane/train','image','label',data_gen_args,save_to_dir = None)
+# # construct the training image generator for batch loading
+# datagen_args = dict(rescale=1. / 255, 
+# 					rotation_range=180,
+# 					# color_mode='rgb',
+# 					horizontal_flip=True)
+# 					# preprocessing_function = myFunc)
 
-# model = unet()
-# model_checkpoint = ModelCheckpoint('unet_membrane.hdf5', monitor='loss',verbose=1, save_best_only=True)
-# model.fit_generator(myGene,steps_per_epoch=300,epochs=1,callbacks=[model_checkpoint])
+# datagenx = ImageDataGenerator(**datagen_args)
+# datageny = ImageDataGenerator(**datagen_args)
 
-# testGene = testGenerator("data/membrane/test")
-# results = model.predict_generator(testGene,30,verbose=1)
-# saveResult("data/membrane/test",results)
+
+# # datagenx.fit(training_images, augment=True, seed=1)
+# # datageny.fit(training_masks, augment=True, seed=1)
+
+
+# genx= datagenx.flow_from_directory('data/traininput',
+# 								   target_size=(512,512),
+# 								   class_mode=None,
+# 								   seed=1)
+# geny= datageny.flow_from_directory('data/trainoutput',
+# 								   target_size=(512,512),
+# 								   class_mode=None,
+# 								   seed=1)
+
+# # # you can now fit a generator as well
+# # datagenX.fit_generator(dgdx, nb_iter=100)
+
+# # here we sychronize two generator and combine it into one
+# train_generator = zip(genx, geny)
