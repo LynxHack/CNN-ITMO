@@ -48,32 +48,39 @@ from keras.preprocessing import image
 def image_gen(inputfile, outputfile, n_chunks):
     image_list_input = []
     image_list_output = []
-    for filename in glob.glob(inputfile): #assuming tiff
-        im=Image.open(filename)
-        image_list_input.append(im)
+    for filename in glob.glob(inputfile):
+        # im=Image.open(filename)
+        # image_list_input.append(im)
+        image_list_input.append(filename)
 
-    for filename in glob.glob(outputfile): #assuming tiff
-        im=Image.open(filename)
-        image_list_output.append(im)
-
+    for filename in glob.glob(outputfile):
+        # im=Image.open(filename)
+        # image_list_output.append(im)
+        image_list_output.append(filename)
+        
     ## Convert into YUV append into X and y set data array for one epoch
     print('generator initiated')
     for idx in range(0, len(image_list_input), n_chunks): ##19 chunks of 41 images
         imagebatch_in = image_list_input[idx:idx + n_chunks]
         imagebatch_out = image_list_output[idx:idx + n_chunks]
-        print('Grabbing ', len(imagebatch_in), ' files')
+        print('Grabbing ', len(imagebatch_in), ' input files')
+        print('Grabbing ', len(imagebatch_out), ' output files')
         YUV_list = []
         for img in imagebatch_in:
-            img_val = np.asarray(img.convert('YCbCr')).astype(float)
+            openimg =Image.open(img)
+            img_val = np.asarray(openimg.convert('YCbCr')).astype(float)
             YUV_list.append(img_val)
             X = np.asarray(YUV_list)
+            openimg.close()
 
         YUV_list = []
         for img in imagebatch_out:
-            img_val = np.asarray(img.convert('YCbCr')).astype(float)
+            openimg =Image.open(img)
+            img_val = np.asarray(openimg.convert('YCbCr')).astype(float)
             YUV_list.append(img_val)
-
             y = np.asarray(YUV_list) 
+            openimg.close()
+
         yield X, y
 
         print('generator yielded a batch starting from image #%d' % idx)
