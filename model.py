@@ -228,7 +228,9 @@ def U_net(pretrained_weights = None, input_size = (512,512,3)):
     OutImage = Conv2DTranspose(3, 1, activation = 'sigmoid')(conv10)
 
     model = Model(input = inputs, output = OutImage, name='Reinhardt Prediction')
-    model.compile(optimizer = 'adadelta', loss = 'mean_squared_error', metrics = ['accuracy'])
+    # Adam Optimizer
+    adam = optimizers.Adam(lr=0.002, beta_1=0.5, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
+    model.compile(optimizer = adam, loss = 'mean_squared_error', metrics = ['accuracy'])
     # model.compile(optimizer = SGD(lr=0.01, momentum=0.09, decay=1e-6, nesterov=True), loss = 'mean_squared_error', metrics = ['accuracy'])
 #   Calculate the mean square error
 #     if(pretrained_weights):
