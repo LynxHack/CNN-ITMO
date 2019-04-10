@@ -35,8 +35,8 @@ test_generator = validation_image_gen(inputfile='data/test/input/*.png',
 
 model.fit_generator(generator=train_generator,
 					validation_data=test_generator,
-					validation_steps = 79,
-					steps_per_epoch=70, 
+					validation_steps = 10,
+					steps_per_epoch=10, 
 					epochs=1,
 					verbose=1)
 model.save('itmo.h5')  # creates a HDF5 file 'my_model.h5'
