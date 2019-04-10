@@ -74,7 +74,7 @@ def image_gen(inputfile, outputfile, n_chunks):
             for img in imagebatch_in:
                 openimg =Image.open(img)
                 img_y, img_b, img_r = openimg.convert('YCbCr').split() # Obtain split, to extract Y channel
-                img_val = np.asarray(img_y).astype(float)
+                img_val = np.asarray(img_y).astype(float) // 255
                 conv_img = img_val[:, :, np.newaxis] # Convert (512, 512) to (512, 512, 1)
                 YUV_list.append(conv_img)
                 X = np.asarray(YUV_list)
@@ -84,7 +84,7 @@ def image_gen(inputfile, outputfile, n_chunks):
             for img in imagebatch_out: # Do the same for output images
                 openimg =Image.open(img)
                 img_y, img_b, img_r = openimg.convert('YCbCr').split() # Obtain split, to extract Y channel
-                img_val = np.asarray(img_y).astype(float)
+                img_val = np.asarray(img_y).astype(float) // 255
                 conv_img = img_val[:, :, np.newaxis] # Convert (512, 512) to (512, 512, 1)
                 YUV_list.append(conv_img)
                 y = np.asarray(YUV_list)
@@ -165,7 +165,7 @@ def validation_image_gen(inputfile, outputfile, n_chunks):
         for img in imagebatch_in:
             openimg =Image.open(img)
             img_y, img_b, img_r = openimg.convert('YCbCr').split() # Obtain split, to extract Y channel
-            img_val = np.asarray(img_y).astype(float)
+            img_val = np.asarray(img_y).astype(float) // 255
             conv_img = img_val[:, :, np.newaxis] # Convert (512, 512) to (512, 512, 1)
             YUV_list.append(conv_img)
             X = np.asarray(YUV_list)
@@ -175,7 +175,7 @@ def validation_image_gen(inputfile, outputfile, n_chunks):
         for img in imagebatch_out:
             openimg =Image.open(img)
             img_y, img_b, img_r = openimg.convert('YCbCr').split() # Obtain split, to extract Y channel
-            img_val = np.asarray(img_y).astype(float)
+            img_val = np.asarray(img_y).astype(float) // 255
             conv_img = img_val[:, :, np.newaxis] # Convert (512, 512) to (512, 512, 1)
             YUV_list.append(conv_img)
             y = np.asarray(YUV_list)
@@ -199,7 +199,7 @@ def load_image(filename, ratio):
     YUV_list = []
     for img in image_list:
         # img_y, img_b, img_r = img.convert('YCbCr').split()
-        img_val = np.asarray(img.convert('YCbCr')).astype(float)
+        img_val = np.asarray(img.convert('YCbCr')).astype(float) // 255.0
         # img_val = np.asarray([np.asarray(img_y).astype(float), 
         #                       np.asarray(img_b).astype(float), 
         #                       np.asarray(img_r).astype(float)]) //255.0
