@@ -28,7 +28,7 @@ model.fit_generator(generator=train_generator,
 					validation_data=test_generator,
 					validation_steps = 1,
 					steps_per_epoch=300, 
-					epochs=1,
+					epochs=100,
 					verbose=1)
 
 model.save('itmo.h5')  # creates a HDF5 file 'my_model.h5'
