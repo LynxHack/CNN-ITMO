@@ -23,3 +23,4 @@ print(device_lib.list_local_devices())
 ~~~~
 python3 main.py
 ~~~~
+Training Data are out in Data Folder ->Train
