@@ -23,4 +23,6 @@ print(device_lib.list_local_devices())
 ~~~~
 python3 main.py
 ~~~~
-Training Data are out in Data Folder ->Train
+~~~~
+Training Data are put in Data Folder ->Train, replace input with input_cnn, replace outout with reference_cnn 
+~~~~~
