@@ -28,7 +28,7 @@ train_generator = image_gen(inputfile='data/train/input/*.png',
 
 test_generator = validation_image_gen(inputfile='data/test/input/*.png', 
 							outputfile='data/test/output/*.png',
-							n_chunks=70)
+							n_chunks=79)
 
 # X, y = next(train_generator)
 # model.fit(X, y, validation_split=0.2, verbose = 1)
