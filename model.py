@@ -157,8 +157,8 @@ def load_image(filename, ratio):
 
     return train, test
 
-
-def U_net(pretrained_weights = None, input_size = (512,512,3)):
+    ##Modified to use only Y component (4.10)
+def U_net(pretrained_weights = None, input_size = (512,512,1)):
     ##Encoding
     ##32 kernels for the first block with size 3*3  
     inputs = Input(input_size)
@@ -190,19 +190,22 @@ def U_net(pretrained_weights = None, input_size = (512,512,3)):
     pool5 = MaxPooling2D(pool_size=(2, 2),strides=2)(drop5)
 
     ##1024 kernel for the 6th block. Pass to decoder
+    ##Dropout here(4.10)
     conv_cross = Conv2D(1024, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool5)
     conv_cross = Conv2D(1024, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv_cross)
+    drop_cross = Dropout(0.5)(conv_cross)
 
     ##Decoding 
     ##transposed conv
     ##upsample fiter size 4 (2*2),strides (2) 
-    up6 = Conv2DTranspose(512, 2, activation = 'relu', strides=2, padding = 'valid', kernel_initializer = 'he_normal')(conv_cross)##(UpSampling2D(size = (2,2))(conv_cross))
-    merge6 = concatenate([conv5, up6], axis = 3)
+    ##concatenate on axis 3
+    up6 = Conv2DTranspose(512, 2, activation = 'relu', strides=2, padding = 'valid', kernel_initializer = 'he_normal')(drop_cross)##(UpSampling2D(size = (2,2))(conv_cross))
+    merge6 = concatenate([drop5, up6], axis = 3)
     #conv6 = Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge6)
     conv6 = Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge6)
                                                                                        
     up7 = Conv2DTranspose(256, 2, activation = 'relu', strides=2, padding = 'valid', kernel_initializer = 'he_normal')(conv6)##(UpSampling2D(size = (2,2))(conv6))
-    merge7 = concatenate([conv4,up7], axis = 3)
+    merge7 = concatenate([drop4,up7], axis = 3)
     conv7 = Conv2DTranspose(256, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge7)
     # conv7 = Conv2DTranspose(256, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv7)
 
@@ -224,8 +227,9 @@ def U_net(pretrained_weights = None, input_size = (512,512,3)):
     #conv9 = Conv2D(2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9) 
     
     ## To generate output, use 3 filters with size of 3*3      
-    ## Use Sigmoid here (changed by zz)                                                                                                                                     
-    OutImage = Conv2DTranspose(3, 1, activation = 'sigmoid')(conv10)
+    ## Use Sigmoid here (changed by zz)      
+    ## One dimension in Z axis, and 3*3 filter size
+    OutImage = Conv2DTranspose(1, 3, activation = 'sigmoid')(conv10)
 
     model = Model(input = inputs, output = OutImage, name='Reinhardt Prediction')
     # Adam Optimizer
