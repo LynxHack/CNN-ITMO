@@ -215,86 +215,87 @@ def load_image(filename, ratio):
 
 ####IMPORTANT(4.10)
 ## Add Batch After Relu
-#def ConvBN(filters, kernel_size, inputs):
-#    return BatchNormalization()(Activation(activation='relu')(Conv2D(filters, kernel_size, padding = 'same', kernel_initializer = 'he_normal')(inputs)))
+def ConvBN(filters, kernel_size, inputs):
+    return BatchNormalization()(Activation(activation='relu')(Conv2D(filters, kernel_size, padding = 'same', kernel_initializer = 'he_normal')(inputs)))
 
 ## 
-#def ConvBNTranspose(filters, kernel_size, inputs):    
-#    return BatchNormalization()(Activation(activation='relu')(Conv2DTranspose(filters, kernel_size, strides=2, padding = 'valid', kernel_initializer = 'he_normal')(inputs)))
+def ConvBNTranspose(filters, kernel_size, inputs):    
+    return BatchNormalization()(Activation(activation='relu')(Conv2DTranspose(filters, kernel_size, strides=2, padding = 'valid', kernel_initializer = 'he_normal')(inputs)))
     
     ##Modified to use only Y component (4.10)
 def U_net(pretrained_weights = None, input_size = (512,512,1)):
     ##Encoding
     ##32 kernels for the first block with size 3*3  
     inputs = Input(input_size)
-    conv1 = Conv2D(32, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(inputs)
-    conv1 = Conv2D(32, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv1)
+    conv1 = ConvBN(32, 3, inputs)
+    conv1 = ConvBN(32, 3, conv1)
     pool1 = MaxPooling2D(pool_size=(2, 2),strides=2)(conv1)
 
     ##64 kernels for the second block with size 3*3
-    conv2 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool1)
-    conv2 = Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv2)
+    conv2 = ConvBN(64, 3, pool1)
+    conv2 = ConvBN(64, 3, conv2)
     pool2 = MaxPooling2D(pool_size=(2, 2),strides=2)(conv2)
 
     ##128 kernels for the third block with size 3*3
-    conv3 = Conv2D(128, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool2)
-    conv3 = Conv2D(128, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv3)
+    conv3 = ConvBN(128, 3, pool2)
+    conv3 = ConvBN(128, 3, conv3)
     pool3 = MaxPooling2D(pool_size=(2, 2),strides=2)(conv3)
     
     ##256 kernels for the fourth block with size 3*3
     ##Delete Dropout here. Use data augmentation to solve the overfitting
-    conv4 = Conv2D(256, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool3)
-    conv4 = Conv2D(256, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv4)
+    conv4 = ConvBN(256, 3, pool3)
+    conv4 = ConvBN(256, 3, conv4)
     drop4 = Dropout(0.5)(conv4)
     pool4 = MaxPooling2D(pool_size=(2, 2),strides=2)(drop4)
 
     ##512 kernels for the fifth block
-    conv5 = Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool4)
-    conv5 = Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv5)
+    conv5 = ConvBN(512, 3, pool4)
+    conv5 = ConvBN(512, 3, conv5)
     drop5 = Dropout(0.5)(conv5)
     pool5 = MaxPooling2D(pool_size=(2, 2),strides=2)(drop5)
 
     ##1024 kernel for the 6th block. Pass to decoder
     ##Dropout here(4.10)
-    conv_cross = Conv2D(1024, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool5)
-    conv_cross = Conv2D(1024, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv_cross)
+    conv_cross = ConvBN(1024, 3, pool5)
+    conv_cross = ConvBN(1024, 3, conv_cross)
     drop_cross = Dropout(0.5)(conv_cross)
 
     ##Decoding 
     ##transposed conv
     ##upsample fiter size 4 (2*2),strides (2) 
     ##concatenate on axis 3
-    up6 = Conv2DTranspose(512, 2, activation = 'relu', strides=2, padding = 'valid', kernel_initializer = 'he_normal')(drop_cross)##(UpSampling2D(size = (2,2))(conv_cross))
+    up6 = ConvBNTranspose(512, 2, drop_cross)##(UpSampling2D(size = (2,2))(conv_cross))
     merge6 = concatenate([drop5, up6], axis = 3)
-    #conv6 = Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge6)
-    conv6 = Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge6)
+    conv6 = ConvBN(512, 3, merge6)
+    conv6 = ConvBN(512, 3, conv6)
                                                                                        
-    up7 = Conv2DTranspose(256, 2, activation = 'relu', strides=2, padding = 'valid', kernel_initializer = 'he_normal')(conv6)##(UpSampling2D(size = (2,2))(conv6))
+    up7 = ConvBNTranspose(256, 2, conv6)##(UpSampling2D(size = (2,2))(conv6))
     merge7 = concatenate([drop4,up7], axis = 3)
-    conv7 = Conv2DTranspose(256, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge7)
-    # conv7 = Conv2DTranspose(256, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv7)
+    conv7 = ConvBN(256, 3,merge7)
+    conv7 = ConvBN(256, 3,conv7)
 
-    up8 = Conv2DTranspose(128, 2, activation = 'relu', strides=2, padding = 'valid', kernel_initializer = 'he_normal')(conv7)##(UpSampling2D(size = (2,2))(conv7))
+    up8 = ConvBNTranspose(128, 2, conv7)##(UpSampling2D(size = (2,2))(conv7))
     merge8 = concatenate([conv3,up8], axis = 3)
-    conv8 = Conv2DTranspose(128, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge8)
-    # conv8 = Conv2DTranspose(128, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv8)
+    conv8 = ConvBN(128, 3, merge8)
+    conv8 = ConvBN(128, 3, conv8)
 
-    up9 = Conv2DTranspose(64, 2, activation = 'relu', strides=2, padding = 'valid', kernel_initializer = 'he_normal')(conv8)##(UpSampling2D(size = (2,2))(conv8))
+    up9 = ConvBNTranspose(64, 2, conv8)##(UpSampling2D(size = (2,2))(conv8))
     merge9 = concatenate([conv2,up9], axis = 3)
-    conv9 = Conv2DTranspose(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge9)
-    # conv9 = Conv2DTranspose(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
+    conv9 = ConvBN(64, 3, merge9)
+    conv9 = ConvBN(64, 3, conv9)
     # conv9 = Conv2D(2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
     
-    up10 = Conv2DTranspose(32, 2, activation = 'relu', strides=2, padding = 'valid', kernel_initializer = 'he_normal')(conv9)##(UpSampling2D(size = (2,2))(conv9))
+    up10 = ConvBNTranspose(32, 2, conv9)##(UpSampling2D(size = (2,2))(conv9))
     merge10 = concatenate([conv1,up10], axis = 3)
-    conv10 = Conv2DTranspose(32, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(merge10)
-    # conv10 = Conv2DTranspose(32, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv10)
+    conv10 = ConvBN(32, 3, merge10)
+    conv10 = ConvBN(32, 3, conv10)
     #conv9 = Conv2D(2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9) 
     
     ## To generate output, use 3 filters with size of 3*3      
     ## Use Sigmoid here (changed by zz)      
     ## One dimension in Z axis, and 3*3 filter size
-    OutImage = Conv2DTranspose(1, 1, activation = 'sigmoid')(conv10)
+    ## Second parameter 1 or 3
+    OutImage = Conv2D(1, 1, activation = 'sigmoid')(conv10)
 
     model = Model(input = inputs, output = OutImage, name='Reinhardt Prediction')
     # Adam Optimizer
