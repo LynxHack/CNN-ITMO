@@ -224,8 +224,8 @@ def U_net(pretrained_weights = None, input_size = (512,512,3)):
     #conv9 = Conv2D(2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9) 
     
     ## To generate output, use 3 filters with size of 3*3      
-    ## Use Softmax here (changed by zz)                                                                                                                                     
-    OutImage = Conv2DTranspose(3, 1, activation = 'softmax')(conv10)
+    ## Use Sigmoid here (changed by zz)                                                                                                                                     
+    OutImage = Conv2DTranspose(3, 1, activation = 'sigmoid')(conv10)
 
     model = Model(input = inputs, output = OutImage, name='Reinhardt Prediction')
     model.compile(optimizer = 'adadelta', loss = 'mean_squared_error', metrics = ['accuracy'])
