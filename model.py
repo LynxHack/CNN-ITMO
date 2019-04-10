@@ -61,7 +61,7 @@ def image_gen(inputfile, outputfile, n_chunks):
     ## Convert into YUV append into X and y set data array for one epoch
     print('generator initiated')
     while (True): # Set infinite loop to allow for next epoch one all the images are used
-        for idx in range(0, len(image_list_input), n_chunks): ##19 chunks of 41 images
+        for idx in range(0, len(image_list_input), n_chunks):
             imagebatch_in = image_list_input[idx:idx + n_chunks]
             imagebatch_out = image_list_output[idx:idx + n_chunks]
             # print(imagebatch_in)
@@ -71,22 +71,72 @@ def image_gen(inputfile, outputfile, n_chunks):
             YUV_list = []
             for img in imagebatch_in:
                 openimg =Image.open(img)
-                img_val = np.asarray(openimg.convert('YCbCr')).astype(float)
-                YUV_list.append(img_val)
+                img_y, img_b, img_r = openimg.convert('YCbCr').split() # Obtain split, to extract Y channel
+                img_val = np.asarray(img_y).astype(float)
+                conv_img = img_val[:, :, np.newaxis] # Convert (512, 512) to (512, 512, 1)
+                YUV_list.append(conv_img)
                 X = np.asarray(YUV_list)
                 openimg.close()
 
             YUV_list = []
-            for img in imagebatch_out:
+            for img in imagebatch_out: # Do the same for output images
                 openimg =Image.open(img)
-                img_val = np.asarray(openimg.convert('YCbCr')).astype(float)
-                YUV_list.append(img_val)
-                y = np.asarray(YUV_list) 
+                img_y, img_b, img_r = openimg.convert('YCbCr').split() # Obtain split, to extract Y channel
+                img_val = np.asarray(img_y).astype(float)
+                conv_img = img_val[:, :, np.newaxis] # Convert (512, 512) to (512, 512, 1)
+                YUV_list.append(conv_img)
+                y = np.asarray(YUV_list)
                 openimg.close()
 
             yield X, y
 
             print('generator yielded a batch starting from image #%d' % idx)
+
+
+
+# def image_gen(inputfile, outputfile, n_chunks):
+#     image_list_input = []
+#     image_list_output = []
+#     for filename in glob.glob(inputfile):
+#         # im=Image.open(filename)
+#         # image_list_input.append(im)
+#         image_list_input.append(filename)
+
+#     for filename in glob.glob(outputfile):
+#         # im=Image.open(filename)
+#         # image_list_output.append(im)
+#         image_list_output.append(filename)
+        
+#     ## Convert into YUV append into X and y set data array for one epoch
+#     print('generator initiated')
+#     while (True): # Set infinite loop to allow for next epoch one all the images are used
+#         for idx in range(0, len(image_list_input), n_chunks): 
+#             imagebatch_in = image_list_input[idx:idx + n_chunks]
+#             imagebatch_out = image_list_output[idx:idx + n_chunks]
+#             # print(imagebatch_in)
+#             # print(imagebatch_out)
+#             print('Grabbing ', len(imagebatch_in), ' input files')
+#             print('Grabbing ', len(imagebatch_out), ' output files')
+#             YUV_list = []
+#             for img in imagebatch_in:
+#                 openimg =Image.open(img)
+#                 img_val = np.asarray(openimg.convert('YCbCr')).astype(float)
+#                 YUV_list.append(img_val)
+#                 X = np.asarray(YUV_list)
+#                 openimg.close()
+
+#             YUV_list = []
+#             for img in imagebatch_out:
+#                 openimg =Image.open(img)
+#                 img_val = np.asarray(openimg.convert('YCbCr')).astype(float)
+#                 YUV_list.append(img_val)
+#                 y = np.asarray(YUV_list) 
+#                 openimg.close()
+
+#             yield X, y
+
+#             print('generator yielded a batch starting from image #%d' % idx)
+
 
 
 
@@ -112,17 +162,21 @@ def validation_image_gen(inputfile, outputfile, n_chunks):
         YUV_list = []
         for img in imagebatch_in:
             openimg =Image.open(img)
-            img_val = np.asarray(openimg.convert('YCbCr')).astype(float)
-            YUV_list.append(img_val)
+            img_y, img_b, img_r = openimg.convert('YCbCr').split() # Obtain split, to extract Y channel
+            img_val = np.asarray(img_y).astype(float)
+            conv_img = img_val[:, :, np.newaxis] # Convert (512, 512) to (512, 512, 1)
+            YUV_list.append(conv_img)
             X = np.asarray(YUV_list)
             openimg.close()
 
         YUV_list = []
         for img in imagebatch_out:
             openimg =Image.open(img)
-            img_val = np.asarray(openimg.convert('YCbCr')).astype(float)
-            YUV_list.append(img_val)
-            y = np.asarray(YUV_list) 
+            img_y, img_b, img_r = openimg.convert('YCbCr').split() # Obtain split, to extract Y channel
+            img_val = np.asarray(img_y).astype(float)
+            conv_img = img_val[:, :, np.newaxis] # Convert (512, 512) to (512, 512, 1)
+            YUV_list.append(conv_img)
+            y = np.asarray(YUV_list)
             openimg.close()
 
         yield X, y
@@ -229,12 +283,12 @@ def U_net(pretrained_weights = None, input_size = (512,512,1)):
     ## To generate output, use 3 filters with size of 3*3      
     ## Use Sigmoid here (changed by zz)      
     ## One dimension in Z axis, and 3*3 filter size
-    OutImage = Conv2DTranspose(1, 3, activation = 'sigmoid')(conv10)
+    OutImage = Conv2DTranspose(1, 1, activation = 'sigmoid')(conv10)
 
     model = Model(input = inputs, output = OutImage, name='Reinhardt Prediction')
     # Adam Optimizer
-    adam = optimizers.Adam(lr=0.002, beta_1=0.5, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
-    model.compile(optimizer = adam, loss = 'mean_squared_error', metrics = ['accuracy'])
+    # adam = optimizers.Adam(lr=0.002, beta_1=0.5, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
+    model.compile(optimizer = Adam(lr=0.002, beta_1=0.5, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False), loss = 'mean_squared_error', metrics = ['accuracy'])
     # model.compile(optimizer = SGD(lr=0.01, momentum=0.09, decay=1e-6, nesterov=True), loss = 'mean_squared_error', metrics = ['accuracy'])
 #   Calculate the mean square error
 #     if(pretrained_weights):
