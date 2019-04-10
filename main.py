@@ -30,13 +30,17 @@ test_generator = validation_image_gen(inputfile='data/test/input/*.png',
 							outputfile='data/test/output/*.png',
 							n_chunks=70)
 
+# X, y = next(train_generator)
+# model.fit(X, y, validation_split=0.2, verbose = 1)
+
 model.fit_generator(generator=train_generator,
 					validation_data=test_generator,
-					validation_steps=10,
-					steps_per_epoch=10, 
-					epochs=10,
-					verbose=2)
+					validation_steps = 79,
+					steps_per_epoch=70, 
+					epochs=1,
+					verbose=1)
 model.save('itmo.h5')  # creates a HDF5 file 'my_model.h5'
+
 # def myFunc(image):
 #     img = np.array(image)
 #     imgYCC = cv2.cvtColor(img, cv2.COLOR_BGR2YCR_CB)
