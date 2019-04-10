@@ -17,6 +17,8 @@ from keras.optimizers import *
 from keras.callbacks import ModelCheckpoint, LearningRateScheduler
 from keras import backend as keras
 from keras.preprocessing import image
+# import BatchNormalization
+from keras.layers.normalization import BatchNormalization
 
 ## YUV Extraction from RGB
 #import cv2 
@@ -157,6 +159,15 @@ def load_image(filename, ratio):
 
     return train, test
 
+####IMPORTANT(4.10)
+## Add Batch After Relu
+#def ConvBN(filters, kernel_size, inputs):
+#    return BatchNormalization()(Activation(activation='relu')(Conv2D(filters, kernel_size, padding = 'same', kernel_initializer = 'he_normal')(inputs)))
+
+## 
+#def ConvBNTranspose(filters, kernel_size, inputs):    
+#    return BatchNormalization()(Activation(activation='relu')(Conv2DTranspose(filters, kernel_size, strides=2, padding = 'valid', kernel_initializer = 'he_normal')(inputs)))
+    
     ##Modified to use only Y component (4.10)
 def U_net(pretrained_weights = None, input_size = (512,512,1)):
     ##Encoding
