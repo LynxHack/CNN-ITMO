@@ -60,30 +60,33 @@ def image_gen(inputfile, outputfile, n_chunks):
         
     ## Convert into YUV append into X and y set data array for one epoch
     print('generator initiated')
-    for idx in range(0, len(image_list_input), n_chunks): ##19 chunks of 41 images
-        imagebatch_in = image_list_input[idx:idx + n_chunks]
-        imagebatch_out = image_list_output[idx:idx + n_chunks]
-        print('Grabbing ', len(imagebatch_in), ' input files')
-        print('Grabbing ', len(imagebatch_out), ' output files')
-        YUV_list = []
-        for img in imagebatch_in:
-            openimg =Image.open(img)
-            img_val = np.asarray(openimg.convert('YCbCr')).astype(float)
-            YUV_list.append(img_val)
-            X = np.asarray(YUV_list)
-            openimg.close()
+    while (True): # Set infinite loop to allow for next epoch one all the images are used
+        for idx in range(0, len(image_list_input), n_chunks): ##19 chunks of 41 images
+            imagebatch_in = image_list_input[idx:idx + n_chunks]
+            imagebatch_out = image_list_output[idx:idx + n_chunks]
+            # print(imagebatch_in)
+            # print(imagebatch_out)
+            print('Grabbing ', len(imagebatch_in), ' input files')
+            print('Grabbing ', len(imagebatch_out), ' output files')
+            YUV_list = []
+            for img in imagebatch_in:
+                openimg =Image.open(img)
+                img_val = np.asarray(openimg.convert('YCbCr')).astype(float)
+                YUV_list.append(img_val)
+                X = np.asarray(YUV_list)
+                openimg.close()
 
-        YUV_list = []
-        for img in imagebatch_out:
-            openimg =Image.open(img)
-            img_val = np.asarray(openimg.convert('YCbCr')).astype(float)
-            YUV_list.append(img_val)
-            y = np.asarray(YUV_list) 
-            openimg.close()
+            YUV_list = []
+            for img in imagebatch_out:
+                openimg =Image.open(img)
+                img_val = np.asarray(openimg.convert('YCbCr')).astype(float)
+                YUV_list.append(img_val)
+                y = np.asarray(YUV_list) 
+                openimg.close()
 
-        yield X, y
+            yield X, y
 
-        print('generator yielded a batch starting from image #%d' % idx)
+            print('generator yielded a batch starting from image #%d' % idx)
 
 
 
@@ -102,10 +105,10 @@ def validation_image_gen(inputfile, outputfile, n_chunks):
 
     ## Convert into YUV append into X and y set data array for one epoch
     print('generator initiated')
-    for idx in range(0, len(image_list_input), n_chunks): ##19 chunks of 41 images
+    while True:
         imagebatch_in = image_list_input
         imagebatch_out = image_list_output
-        print('Grabbing ', len(imagebatch_in), ' files')
+        print('Grabbing ', len(imagebatch_in), 'validation files')
         YUV_list = []
         for img in imagebatch_in:
             openimg =Image.open(img)
@@ -177,14 +180,14 @@ def U_net(pretrained_weights = None, input_size = (512,512,3)):
     ##Delete Dropout here. Use data augmentation to solve the overfitting
     conv4 = Conv2D(256, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool3)
     conv4 = Conv2D(256, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv4)
-#   drop4 = Dropout(0.5)(conv4)
-    pool4 = MaxPooling2D(pool_size=(2, 2),strides=2)(conv4)
+    drop4 = Dropout(0.5)(conv4)
+    pool4 = MaxPooling2D(pool_size=(2, 2),strides=2)(drop4)
 
     ##512 kernels for the fifth block
     conv5 = Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool4)
     conv5 = Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv5)
-#    drop5 = Dropout(0.5)(conv5)
-    pool5 = MaxPooling2D(pool_size=(2, 2),strides=2)(conv5)
+    drop5 = Dropout(0.5)(conv5)
+    pool5 = MaxPooling2D(pool_size=(2, 2),strides=2)(drop5)
 
     ##1024 kernel for the 6th block. Pass to decoder
     conv_cross = Conv2D(1024, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(pool5)
@@ -224,8 +227,9 @@ def U_net(pretrained_weights = None, input_size = (512,512,3)):
     ## Use Softmax here (changed by zz)                                                                                                                                     
     OutImage = Conv2DTranspose(3, 1, activation = 'softmax')(conv10)
 
-    model = Model(input = inputs, output = OutImage, name='Reinhardt Predication')
-    model.compile(optimizer = SGD(lr=0.01, momentum=0.0, decay=0.0), loss = 'mean_squared_error', metrics = ['accuracy'])
+    model = Model(input = inputs, output = OutImage, name='Reinhardt Prediction')
+    model.compile(optimizer = 'adadelta', loss = 'mean_squared_error', metrics = ['accuracy'])
+    # model.compile(optimizer = SGD(lr=0.01, momentum=0.09, decay=1e-6, nesterov=True), loss = 'mean_squared_error', metrics = ['accuracy'])
 #   Calculate the mean square error
 #     if(pretrained_weights):
 #     	model.load_weights(pretrained_weights)
