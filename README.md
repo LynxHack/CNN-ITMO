@@ -26,3 +26,6 @@ python3 main.py
 ~~~~
 Training Data are put in Data Folder ->Train, replace input with input_cnn, replace output with reference_cnn 
 ~~~~~
+~~~~
+Epochs num are set to 100 currently. Modify in main.py
+~~~~
