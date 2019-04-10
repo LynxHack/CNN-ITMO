@@ -47,7 +47,7 @@ from keras.layers.normalization import BatchNormalization
 
 #     return train_X.reshape(512,512,1), test_X.reshape(512,512,1)
 
-def image_gen(inputfile, outputfile, n_chunks):
+def image_gen(inputfile, outputfile, n_chunks, model):
     image_list_input = []
     image_list_output = []
     for filename in glob.glob(inputfile):
@@ -91,7 +91,7 @@ def image_gen(inputfile, outputfile, n_chunks):
                 openimg.close()
 
             yield X, y
-
+            model.save('itmo.h5')
             print('generator yielded a batch starting from image #%d' % idx)
 
 

@@ -18,7 +18,7 @@ except:
 
 train_generator = image_gen(inputfile='data/train/input/*.png', 
 							outputfile='data/train/output/*.png',
-							n_chunks=8)
+							n_chunks=8, model = model) ## save once per train batch in case of closing halfway
 
 test_generator = validation_image_gen(inputfile='data/test/input/*.png', 
 							outputfile='data/test/output/*.png',
@@ -30,4 +30,5 @@ model.fit_generator(generator=train_generator,
 					steps_per_epoch=300, 
 					epochs=1,
 					verbose=1)
+
 model.save('itmo.h5')  # creates a HDF5 file 'my_model.h5'
