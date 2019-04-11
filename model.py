@@ -258,13 +258,13 @@ def U_net(pretrained_weights = None, input_size = (512,512,1)):
     ##Dropout here(4.10)
     conv_cross = ConvBN(1024, 3, pool5)
     conv_cross = ConvBN(1024, 3, conv_cross)
-    #drop_cross = Dropout(0.5)(conv_cross)
+    drop_cross = Dropout(0.5)(conv_cross)
 
     ##Decoding 
     ##transposed conv
     ##upsample fiter size 4 (2*2),strides (2) 
     ##concatenate on axis 3
-    up6 = ConvBNTranspose(512, 4, conv_cross)##(UpSampling2D(size = (2,2))(conv_cross))
+    up6 = ConvBNTranspose(512, 4, drop_cross)##(UpSampling2D(size = (2,2))(conv_cross))
     merge6 = concatenate([drop5, up6], axis = 3)
     conv6 = ConvBN(512, 3, merge6)
     conv6 = ConvBN(512, 3, conv6)
