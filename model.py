@@ -245,32 +245,32 @@ def U_net(pretrained_weights = None, input_size = (512,512,1)):
     ##Delete Dropout here. Use data augmentation to solve the overfitting
     conv4 = ConvBN(256, 3, pool3)
     conv4 = ConvBN(256, 3, conv4)
-    #drop4 = Dropout(0.5)(conv4)
-    pool4 = MaxPooling2D(pool_size=(2, 2),strides=2)(conv4)
+    drop4 = Dropout(0.5)(conv4)
+    pool4 = MaxPooling2D(pool_size=(2, 2),strides=2)(drop4)
 
     ##512 kernels for the fifth block
     conv5 = ConvBN(512, 3, pool4)
     conv5 = ConvBN(512, 3, conv5)
-    #drop5 = Dropout(0.5)(conv5)
-    pool5 = MaxPooling2D(pool_size=(2, 2),strides=2)(conv5)
+    drop5 = Dropout(0.5)(conv5)
+    pool5 = MaxPooling2D(pool_size=(2, 2),strides=2)(drop5)
 
     ##1024 kernel for the 6th block. Pass to decoder
     ##Dropout here(4.10)
     conv_cross = ConvBN(1024, 3, pool5)
     conv_cross = ConvBN(1024, 3, conv_cross)
-    drop_cross = Dropout(0.5)(conv_cross)
+    #drop_cross = Dropout(0.5)(conv_cross)
 
     ##Decoding 
     ##transposed conv
     ##upsample fiter size 4 (2*2),strides (2) 
     ##concatenate on axis 3
-    up6 = ConvBNTranspose(512, 4, drop_cross)##(UpSampling2D(size = (2,2))(conv_cross))
-    merge6 = concatenate([conv5, up6], axis = 3)
+    up6 = ConvBNTranspose(512, 4, conv_cross)##(UpSampling2D(size = (2,2))(conv_cross))
+    merge6 = concatenate([drop5, up6], axis = 3)
     conv6 = ConvBN(512, 3, merge6)
     conv6 = ConvBN(512, 3, conv6)
                                                                                        
     up7 = ConvBNTranspose(256, 4, conv6)##(UpSampling2D(size = (2,2))(conv6))
-    merge7 = concatenate([conv4,up7], axis = 3)
+    merge7 = concatenate([drop4,up7], axis = 3)
     conv7 = ConvBN(256, 3,merge7)
     conv7 = ConvBN(256, 3,conv7)
 
