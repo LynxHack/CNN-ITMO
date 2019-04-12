@@ -18,7 +18,7 @@ except:
 
 train_generator = image_gen(inputfile='data/train/input/*.png', 
 							outputfile='data/train/output/*.png',
-							n_chunks=8, model = model) ## save once per train batch in case of closing halfway
+							n_chunks=8,model = model) ## save once per train batch in case of closing halfway
 
 test_generator = validation_image_gen(inputfile='data/test/input/*.png', 
 							outputfile='data/test/output/*.png',
@@ -27,7 +27,7 @@ test_generator = validation_image_gen(inputfile='data/test/input/*.png',
 model.fit_generator(generator=train_generator,
 					validation_data=test_generator,
 					validation_steps = 1,
-					steps_per_epoch=300, 
+					steps_per_epoch=8,
 					epochs=100,
 					verbose=1)
 
