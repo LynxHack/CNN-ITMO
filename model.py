@@ -73,7 +73,9 @@ def image_gen(inputfile, outputfile, n_chunks, model):
             YUV_list = []
             for img in imagebatch_in:
                 openimg =Image.open(img)
-                img_y, img_b, img_r = openimg.convert('YCbCr').split() # Obtain split, to extract Y channel
+                area = (128, 128, 384, 384)
+                croppedimg = openimg.crop(area)
+                img_y, img_b, img_r = croppedimg.convert('YCbCr').split() # Obtain split, to extract Y channel
                 img_val = np.asarray(img_y).astype(float) // 255
                 conv_img = img_val[:, :, np.newaxis] # Convert (512, 512) to (512, 512, 1)
                 YUV_list.append(conv_img)
@@ -83,7 +85,9 @@ def image_gen(inputfile, outputfile, n_chunks, model):
             YUV_list = []
             for img in imagebatch_out: # Do the same for output images
                 openimg =Image.open(img)
-                img_y, img_b, img_r = openimg.convert('YCbCr').split() # Obtain split, to extract Y channel
+                area = (128, 128, 384, 384)
+                croppedimg = openimg.crop(area)
+                img_y, img_b, img_r = croppedimg.convert('YCbCr').split() # Obtain split, to extract Y channel
                 img_val = np.asarray(img_y).astype(float) // 255
                 conv_img = img_val[:, :, np.newaxis] # Convert (512, 512) to (512, 512, 1)
                 YUV_list.append(conv_img)
@@ -164,7 +168,9 @@ def validation_image_gen(inputfile, outputfile, n_chunks):
         YUV_list = []
         for img in imagebatch_in:
             openimg =Image.open(img)
-            img_y, img_b, img_r = openimg.convert('YCbCr').split() # Obtain split, to extract Y channel
+            area = (128, 128, 384, 384) # Take the center 256 x 256 crop
+            croppedimg = openimg.crop(area)
+            img_y, img_b, img_r = croppedimg.convert('YCbCr').split() # Obtain split, to extract Y channel
             img_val = np.asarray(img_y).astype(float) // 255
             conv_img = img_val[:, :, np.newaxis] # Convert (512, 512) to (512, 512, 1)
             YUV_list.append(conv_img)
@@ -174,7 +180,9 @@ def validation_image_gen(inputfile, outputfile, n_chunks):
         YUV_list = []
         for img in imagebatch_out:
             openimg =Image.open(img)
-            img_y, img_b, img_r = openimg.convert('YCbCr').split() # Obtain split, to extract Y channel
+            area = (128, 128, 384, 384)
+            croppedimg = openimg.crop(area)
+            img_y, img_b, img_r = croppedimg.convert('YCbCr').split() # Obtain split, to extract Y channel
             img_val = np.asarray(img_y).astype(float) // 255
             conv_img = img_val[:, :, np.newaxis] # Convert (512, 512) to (512, 512, 1)
             YUV_list.append(conv_img)
@@ -223,17 +231,17 @@ def ConvBNTranspose(filters, kernel_size, inputs):
     return BatchNormalization()(Activation(activation='relu')(Conv2DTranspose(filters, kernel_size, strides=2, padding = 'valid', kernel_initializer = 'he_normal')(inputs)))
     
     ##Modified to use only Y component (4.10)
-def U_net(pretrained_weights = None, input_size = (512,512,1)):
+def U_net(pretrained_weights = None, input_size = (256,256,1)):
     ##Encoding
     ##32 kernels for the first block with size 3*3  
     inputs = Input(input_size)
-    conv1 = ConvBN(32, 3, inputs)
-    conv1 = ConvBN(32, 3, conv1)
-    pool1 = MaxPooling2D(pool_size=(2, 2),strides=2)(conv1)
+    #conv1 = ConvBN(32, 3, inputs)
+    #conv1 = ConvBN(32, 3, conv1)
+    #pool1 = MaxPooling2D(pool_size=(2, 2),strides=2)(conv1)
 
     ##64 kernels for the second block with size 3*3
-    conv2 = ConvBN(64, 3, pool1)
-    conv2 = ConvBN(64, 3, conv2)
+    #conv2 = ConvBN(64, 3, pool1)
+    conv2 = ConvBN(64, 3, inputs)
     pool2 = MaxPooling2D(pool_size=(2, 2),strides=2)(conv2)
 
     ##128 kernels for the third block with size 3*3
@@ -277,12 +285,12 @@ def U_net(pretrained_weights = None, input_size = (512,512,1)):
     up8 = ConvBNTranspose(64, 2, conv7)##(UpSampling2D(size = (2,2))(conv7))
     merge8 = concatenate([conv2,up8], axis = 3)
     conv8 = ConvBN(64, 3, merge8)
-    conv8 = ConvBN(64, 3, conv8)
+    #conv8 = ConvBN(64, 3, conv8)
 
-    up9 = ConvBNTranspose(32, 2, conv8)##(UpSampling2D(size = (2,2))(conv8))
-    merge9 = concatenate([conv1,up9], axis = 3)
-    conv9 = ConvBN(32, 3, merge9)
-    conv9 = ConvBN(32, 3, conv9)
+    #up9 = ConvBNTranspose(32, 2, conv8)##(UpSampling2D(size = (2,2))(conv8))
+    #merge9 = concatenate([conv1,up9], axis = 3)
+    #conv9 = ConvBN(32, 3, merge9)
+    #conv9 = ConvBN(32, 3, conv9)
     # conv9 = Conv2D(2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
     
     #up10 = ConvBNTranspose(32, 2, conv9)##(UpSampling2D(size = (2,2))(conv9))
@@ -295,12 +303,12 @@ def U_net(pretrained_weights = None, input_size = (512,512,1)):
     ## Use Sigmoid here (changed by zz)      
     ## One dimension in Z axis, and 3*3 filter size
     ## Second parameter 1 or 3
-    OutImage = Conv2D(1, 1, activation = 'sigmoid')(conv9)
+    OutImage = Conv2D(1, 1, activation = 'sigmoid')(conv8)
 
     model = Model(input = inputs, output = OutImage, name='Reinhardt Prediction')
     # Adam Optimizer
     # adam = optimizers.Adam(lr=0.002, beta_1=0.5, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
-    model.compile(optimizer = Adam(lr=0.002, beta_1=0.5, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False), loss = 'mean_squared_error', metrics = ['accuracy'])
+    model.compile(optimizer = Adam(lr=0.002, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0), loss = 'mean_squared_error', metrics = ['accuracy'])
     # model.compile(optimizer = SGD(lr=0.01, momentum=0.09, decay=1e-6, nesterov=True), loss = 'mean_squared_error', metrics = ['accuracy'])
 #   Calculate the mean square error
 #     if(pretrained_weights):
