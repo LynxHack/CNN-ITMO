@@ -42,6 +42,9 @@ def testGenerator(test_path,num_image = 5,target_size = (512,512)):
 testGene = testGenerator("images_to_predict/input")
 results = model.predict_generator(testGene,1,verbose=1) * 255
 print(results)
+
+for img in results:
+    
 # saveResult("data/membrane/test",results)
 
 
