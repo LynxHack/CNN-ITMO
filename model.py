@@ -264,7 +264,7 @@ def U_net(pretrained_weights = None, input_size = (512,512,3)):
     ## Use Sigmoid here (changed by zz)      
     ## One dimension in Z axis, and 3*3 filter size
     ## First parameter 1 or 3
-    OutImage = Conv2D(3, 1, activation = 'sigmoid')(conv9)
+    OutImage = Conv2D(3, 3, activation = 'sigmoid')(conv9)
 
     model = Model(input = inputs, output = OutImage, name='Reinhardt Prediction')
     # Adam Optimizer
