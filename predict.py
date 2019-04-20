@@ -24,77 +24,76 @@ import tensorflow as tf
 # config = tf.ConfigProto()
 # config.gpu_options.allow_growth = True
 # sess = tf.Session(config=config)
-model = load_model('saved-model-02-0.54.hdf5')
+model = load_model('epoch0.hdf5')
 
 
 import tensorflow as tf
 from keras import backend as K
 
-def testGenerator(test_path,num_image = 5,target_size = (512,512)):
-    for i in range(num_image):
-        img = io.imread('images_to_predict/output/'+'00'+str(i+1)+".png")
-        img = img / 255
-        img = trans.resize(img,target_size)
-        # img = np.reshape(img,img.shape+(1,))
-        img = np.reshape(img,(1,)+img.shape)
-        yield img
+# def testGenerator(test_path,num_image = 5,target_size = (512,512)):
+#     for i in range(num_image):
+#         img = io.imread('images_to_predict/output/'+'00'+str(i+1)+".png")
+#         img = img / 255
+#         img = trans.resize(img,target_size)
+#         # img = np.reshape(img,img.shape+(1,))
+#         img = np.reshape(img,(1,)+img.shape)
+#         yield img
 
-testGene = testGenerator("images_to_predict/input")
-results = model.predict_generator(testGene,1,verbose=1) * 255
-print(results)
+# testGene = testGenerator("images_to_predict/input")
+# results = model.predict_generator(testGene,1,verbose=1) * 255
+# print(results)
 
-for img in results:
     
 # saveResult("data/membrane/test",results)
 
 
 
-# # import tensorflow as tf
-# config = tf.ConfigProto()
-# config.gpu_options.allow_growth = True
-# sess = tf.Session(config=config)
-# # num_CPU = 1 
-# # num_GPU = 0
+# import tensorflow as tf
+config = tf.ConfigProto()
+config.gpu_options.allow_growth = True
+sess = tf.Session(config=config)
+# num_CPU = 1 
+# num_GPU = 0
 
-# # config = tf.ConfigProto(intra_op_parallelism_threads=num_cores,
-# #                         inter_op_parallelism_threads=num_cores, 
-# #                         allow_soft_placement=True,
-# #                         device_count = {'CPU' : num_CPU,
-# #                                         'GPU' : num_GPU}
-# #                        )
+# config = tf.ConfigProto(intra_op_parallelism_threads=num_cores,
+#                         inter_op_parallelism_threads=num_cores, 
+#                         allow_soft_placement=True,
+#                         device_count = {'CPU' : num_CPU,
+#                                         'GPU' : num_GPU}
+#                        )
 
-# # session = tf.Session(config=config)
-# # K.set_session(session)
+# session = tf.Session(config=config)
+# K.set_session(session)
 
-# ## Grab images from the images_to_predict folder
-# image_list_input = []
-# for filename in glob.glob('images_to_predict/input/*.png'):
-#     image_list_input.append(filename)
+## Grab images from the images_to_predict folder
+image_list_input = []
+for filename in glob.glob('images_to_predict/input/*.png'):
+    image_list_input.append(filename)
 
-# # while (True): # Set infinite loop to allow for next epoch one all the images are used
-# for idx in range(0, len(image_list_input), 1):
-#     imagebatch_in = image_list_input[idx:idx + 1]
-#     print('Grabbing ', len(imagebatch_in), ' input files')
-#     YUV_list = []
-#     for img in imagebatch_in:
-#         openimg =Image.open(img)
-#         # area = (128, 128, 384, 384)
-#         # croppedimg = openimg.crop(area)
+# while (True): # Set infinite loop to allow for next epoch one all the images are used
+for idx in range(0, len(image_list_input), 1):
+    imagebatch_in = image_list_input[idx:idx + 1]
+    print('Grabbing ', len(imagebatch_in), ' input files')
+    YUV_list = []
+    for img in imagebatch_in:
+        openimg =Image.open(img)
+        # area = (128, 128, 384, 384)
+        # croppedimg = openimg.crop(area)
         
-#         img_val = np.true_divide(np.asarray(openimg).astype(float), 255) # Obtain split, to extract Y channel
-#         YUV_list.append(img_val)
-#         X = np.asarray(YUV_list)
-#         pred = model.predict(X)
-#         print("prediction")
-#         imgpred = (pred * 255)[0].astype('uint8')
+        img_val = np.true_divide(np.asarray(openimg).astype(float), 255) # Obtain split, to extract Y channel
+        YUV_list.append(img_val)
+        X = np.asarray(YUV_list)
+        pred = model.predict(X)
+        print("prediction")
+        imgpred = (pred * 255)[0].astype('uint8')
         
-#         print(imgpred, imgpred.shape)
+        print(imgpred, imgpred.shape)
 
-#         newimg = Image.fromarray(imgpred)
-#         # save_matrix(YUVArrayout, 'images_to_predict/output/'+ img.split('\\')[-1]+'.txt')
-#         newimg.save('images_to_predict/output/'+ img.split('\\')[-1])
+        newimg = Image.fromarray(imgpred)
+        # save_matrix(YUVArrayout, 'images_to_predict/output/'+ img.split('\\')[-1]+'.txt')
+        newimg.save('images_to_predict/output/'+ img.split('\\')[-1])
 
-#         openimg.close()
+        openimg.close()
         
 
 

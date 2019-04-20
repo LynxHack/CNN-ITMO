@@ -3,6 +3,7 @@ from PIL import Image
 import glob
 import matplotlib.pyplot as plt
 import random
+
 # Scikit
 import numpy as np 
 from numpy import array
@@ -33,7 +34,7 @@ def shuffle(a, b):
     a, b = zip(*c)
     return a, b
 
-def image_gen(inputfile, outputfile, n_chunks, model):
+def image_gen(inputfile, outputfile, n_chunks):
     image_list_input = []
     image_list_output = []
     for filename in glob.glob(inputfile):
@@ -41,31 +42,34 @@ def image_gen(inputfile, outputfile, n_chunks, model):
         # image_list_input.append(im)
         image_list_input.append(filename)
 
-    for filename in glob.glob(outputfile):
+    for filename2 in glob.glob(outputfile):
         # im=Image.open(filename)
         # image_list_output.append(im)
-        image_list_output.append(filename)
-        
+        image_list_output.append(filename2)
+    # image_list_input.sort()
+    # image_list_output.sort()
     ## Convert into YUV append into X and y set data array for one epoch
     epoch = 0
     print('generator initiated')
     while (True): # Set infinite loop to allow for next epoch one all the images are used
         # Randomize the ordering of input and output (same relative order between the two so they match)
-        image_list_input, image_list_output = shuffle(image_list_input, image_list_output)
+        # image_list_input, image_list_output = shuffle(image_list_input, image_list_output)
         for idx in range(0, len(image_list_input), n_chunks):
             imagebatch_in = image_list_input[idx:idx + n_chunks]
             imagebatch_out = image_list_output[idx:idx + n_chunks]
             # print(imagebatch_in)
             # print(imagebatch_out)
-            print('Grabbing ', len(imagebatch_in), ' input files')
-            print('Grabbing ', len(imagebatch_out), ' output files')
+            # print('Grabbing ', len(imagebatch_in), ' input files')
+            # print('Grabbing ', len(imagebatch_out), ' output files')
             batch_input = []
             batch_output = [] 
             YUV_list = []
             for img in imagebatch_in:
                 # print(img)
+                # print(img)
                 openimg =Image.open(img)
-                area = (128, 128, 384, 384)
+                # area = (128, 128, 384, 384)
+                area = (0, 0, 512, 512)
                 croppedimg = openimg.crop(area)
                 img_val = np.true_divide(np.asarray(croppedimg).astype(float), 255) # Obtain split, to extract Y channel
                 # save_matrix(np.true_divide(np.asarray(img_y).astype(float), 255), 'test.txt')
@@ -86,9 +90,11 @@ def image_gen(inputfile, outputfile, n_chunks, model):
                 openimg.close()
 
             YUV_list = []
-            for img in imagebatch_out: # Do the same for output images
-                openimg =Image.open(img)
-                area = (128, 128, 384, 384)
+            for img2 in imagebatch_out: # Do the same for output images
+                # print(img2)
+                openimg =Image.open(img2)
+                # area = (128, 128, 384, 384)
+                area = (0, 0, 512, 512)
                 croppedimg = openimg.crop(area)
                 img_val = np.true_divide(np.asarray(croppedimg).astype(float), 255) # Obtain split, to extract Y channel
                 # save_matrix(np.true_divide(np.asarray(img_y).astype(float), 255), 'test.txt')
@@ -112,7 +118,7 @@ def image_gen(inputfile, outputfile, n_chunks, model):
             # model.save('itmo.h5')
             print('generator yielded a batch starting from image #%d' % idx)
         epoch = epoch + 1
-        model.save('epoch'+str(epoch)+'itmo.h5')
+        # model.save('epoch'+str(epoch)+'itmo.h5')
 
 def validation_image_gen(inputfile, outputfile, n_chunks):
     image_list_input = []
@@ -141,12 +147,13 @@ def validation_image_gen(inputfile, outputfile, n_chunks):
             # imagebatch_out = image_list_output[idx:idx + n_chunks]
             # print(imagebatch_in)
             # print(imagebatch_out)
-            print('Grabbing ', len(imagebatch_in), ' input files')
-            print('Grabbing ', len(imagebatch_out), ' output files')
+            # print('Grabbing ', len(imagebatch_in), ' input files')
+            # print('Grabbing ', len(imagebatch_out), ' output files')
             YUV_list = []
             for img in imagebatch_in:
                 openimg =Image.open(img)
-                area = (128, 128, 384, 384)
+                # area = (128, 128, 384, 384)
+                area = (0, 0, 512, 512)
                 croppedimg = openimg.crop(area)
                 img_val = np.true_divide(np.asarray(croppedimg).astype(float), 255) # Obtain split, to extract Y channel
                 # YUVArray = np.zeros((256,256,3), 'uint8')
@@ -162,7 +169,8 @@ def validation_image_gen(inputfile, outputfile, n_chunks):
             YUV_list = []
             for img in imagebatch_out: # Do the same for output images
                 openimg =Image.open(img)
-                area = (128, 128, 384, 384)
+                # area = (128, 128, 384, 384)
+                area = (0, 0, 512, 512)
                 croppedimg = openimg.crop(area)
                 img_val = np.true_divide(np.asarray(croppedimg).astype(float), 255) # Obtain split, to extract Y channel
                 # YUVArray = np.zeros((256,256,3), 'uint8')
@@ -265,7 +273,7 @@ def U_net(pretrained_weights = None, input_size = (512,512,3)):
     ## Use Sigmoid here (changed by zz)      
     ## One dimension in Z axis, and 3*3 filter size
     ## First parameter 1 or 3
-    OutImage = Conv2D(3, 1, activation = 'tanh')(conv9)
+    OutImage = Conv2D(3, 1, activation = 'sigmoid')(conv9)
 
     model = Model(input = inputs, output = OutImage, name='ReinhardtPrediction')
     # Adam Optimizer
