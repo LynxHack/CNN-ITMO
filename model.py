@@ -220,60 +220,58 @@ def U_net(pretrained_weights = None, input_size = (512,512,3)):
     pool3 = MaxPooling2D(pool_size=(2, 2),strides=2)(conv3)
     
     ##256 kernels for the fourth block with size 3*3
-    ##Delete Dropout here. Use data augmentation to solve the overfitting
     conv4 = ConvBN(256, 3, pool3)
     conv4 = ConvBN(256, 3, conv4)
     drop4 = Dropout(0.5)(conv4)
     pool4 = MaxPooling2D(pool_size=(2, 2),strides=2)(drop4)
 
-    # ##512 kernels for the fifth block
-    # conv5 = ConvBN(512, 3, pool4)
-    # conv5 = ConvBN(512, 3, conv5)
-    # drop5 = Dropout(0.5)(conv5)
-    # pool5 = MaxPooling2D(pool_size=(2, 2),strides=2)(drop5)
+    #512 kernels for the fifth block
+    conv5 = ConvBN(512, 3, pool4)
+    conv5 = ConvBN(512, 3, conv5)
+    drop5 = Dropout(0.5)(conv5)
+    pool5 = MaxPooling2D(pool_size=(2, 2),strides=2)(drop5)
 
     ##1024 kernel for the 6th block. Pass to decoder
     ##Dropout here(4.10)
-    conv_cross = ConvBN(512, 3, pool4)
-    conv_cross = ConvBN(512, 3, conv_cross)
+    conv_cross = ConvBN(1024, 3, pool5)
+    conv_cross = ConvBN(1024, 3, conv_cross)
     drop_cross = Dropout(0.5)(conv_cross)
 
     ##Decoding 
-    ##transposed conv
+    ##transposed conv(3*3)
     ##upsample fiter size 4 (2*2),strides (2) 
     ##concatenate on axis 3
-    up6 = ConvBNTranspose(512, 2, drop_cross)##(UpSampling2D(size = (2,2))(conv_cross))
-    merge6 = concatenate([drop4, up6], axis = 3)
-    conv6 = ConvBN(512, 1, merge6)
-    #conv6 = ConvBN(512, 3, conv6)
+    up6 = ConvBNTranspose(512, 2, drop_cross)
+    merge6 = concatenate([drop5, up6], axis = 3)
+    conv6 = ConvBN(512, 3, merge6)
+    conv6 = ConvBN(512, 3, conv6)
                                                                                        
     up7 = ConvBNTranspose(256, 2, conv6)##(UpSampling2D(size = (2,2))(conv6))
-    merge7 = concatenate([conv3,up7], axis = 3)
-    conv7 = ConvBN(256, 1,merge7)
-    #conv7 = ConvBN(256, 3,conv7)
+    merge7 = concatenate([drop4,up7], axis = 3)
+    conv7 = ConvBN(256, 3,merge7)
+    conv7 = ConvBN(256, 3,conv7)
 
     up8 = ConvBNTranspose(128, 2, conv7)##(UpSampling2D(size = (2,2))(conv7))
-    merge8 = concatenate([conv2,up8], axis = 3)
-    conv8 = ConvBN(128, 1, merge8)
-    #conv8 = ConvBN(128, 3, conv8)
+    merge8 = concatenate([conv3,up8], axis = 3)
+    conv8 = ConvBN(128, 3, merge8)
+    conv8 = ConvBN(128, 3, conv8)
 
     up9 = ConvBNTranspose(64, 2, conv8)##(UpSampling2D(size = (2,2))(conv8))
-    merge9 = concatenate([conv1,up9], axis = 3)
-    conv9 = ConvBN(64, 1, merge9)
-    #conv9 = ConvBN(64, 3, conv9)
+    merge9 = concatenate([conv2,up9], axis = 3)
+    conv9 = ConvBN(64, 3, merge9)
+    conv9 = ConvBN(64, 3, conv9)
     # conv9 = Conv2D(2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9)
     
-    # up10 = ConvBNTranspose(32, 2, conv9)##(UpSampling2D(size = (2,2))(conv9))
-    # merge10 = concatenate([conv1,up10], axis = 3)
-    # conv10 = ConvBN(32, 3, conv9)
-    # conv10 = ConvBN(32, 3, conv10)
+    up10 = ConvBNTranspose(32, 2, conv9)##(UpSampling2D(size = (2,2))(conv9))
+    merge10 = concatenate([conv1,up10], axis = 3)
+    conv10 = ConvBN(32, 3, conv9)
+    conv10 = ConvBN(32, 3, conv10)
     # conv9 = Conv2D(2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')(conv9) 
     
     ## To generate output, use 3 filters with size of 3*3      
     ## Use Sigmoid here (changed by zz)      
     ## One dimension in Z axis, and 3*3 filter size
-    ## First parameter 1 or 3
-    OutImage = Conv2D(3, 1, activation = 'sigmoid')(conv9)
+    OutImage = Conv2D(3, 3, activation = 'sigmoid')(conv9)
 
     model = Model(input = inputs, output = OutImage, name='ReinhardtPrediction')
     # Adam Optimizer
@@ -281,13 +279,13 @@ def U_net(pretrained_weights = None, input_size = (512,512,3)):
     model.compile(optimizer='rmsprop', loss='mse', metrics=['accuracy'])
     # model.compile(optimizer = Adam(lr=0.001, beta_1=0.5, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False), loss = 'mean_squared_error', metrics = ['accuracy'])
     #model.compile(optimizer = SGD(lr=0.01, momentum=0.09, decay=1e-6, nesterov=True), loss = 'mean_squared_error', metrics = ['accuracy'])
-#   Calculate the mean square error
+
 #     if(pretrained_weights):
 #     	model.load_weights(pretrained_weights)
 
     model.summary()
     return model
-#     model.compile(optimizer = Adam(lr = 1e-4), loss = 'binary_crossentropy', metrics = ['accuracy'])
+
     
 
 
