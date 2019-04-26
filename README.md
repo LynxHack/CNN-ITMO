@@ -66,7 +66,7 @@ The predicted images would be populated in the corresponding output directory to
 # MATLAB Scripts
 
 ## Generating Input and Output Images
-Please use virtual_camera.m for generating input images and Reinhard.m for generating output images
+Please use virtual_camera.m for generating input images and Reinhard.m for generating output images (replace input images)
 
 ## Generating HDR images from the CNN output
-Please run the inverse_Reinhard.m on the produced CNN output to generate the final HDR image
+Please run the inverse_Reinhard.m on the produced CNN output to generate the final HDR image (replace input images)
