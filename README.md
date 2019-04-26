@@ -64,6 +64,7 @@ python predict.py
 The predicted images would be populated in the corresponding output directory to be retrieved
 
 # MATLAB Scripts
+The matlab files can be found the the m-files directory
 
 ## Generating Input and Output Images
 Please use virtual_camera.m for generating input images and Reinhard.m for generating output images (replace input images)

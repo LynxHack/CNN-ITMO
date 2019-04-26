@@ -20,6 +20,7 @@ def save_matrix(a, filename):
 
 
 import tensorflow as tf
+<<<<<<< HEAD
 config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
 sess = tf.Session(config=config)
@@ -44,6 +45,53 @@ model = load_model('saved7-model-136-0.73.hdf5')
 # # K.set_session(session)
 
 # ## Grab images from the images_to_predict folder
+=======
+# config = tf.ConfigProto()
+# config.gpu_options.allow_growth = True
+# sess = tf.Session(config=config)
+model = load_model('epoch0.hdf5')
+
+
+import tensorflow as tf
+from keras import backend as K
+
+# def testGenerator(test_path,num_image = 5,target_size = (512,512)):
+#     for i in range(num_image):
+#         img = io.imread('images_to_predict/output/'+'00'+str(i+1)+".png")
+#         img = img / 255
+#         img = trans.resize(img,target_size)
+#         # img = np.reshape(img,img.shape+(1,))
+#         img = np.reshape(img,(1,)+img.shape)
+#         yield img
+
+# testGene = testGenerator("images_to_predict/input")
+# results = model.predict_generator(testGene,1,verbose=1) * 255
+# print(results)
+
+    
+# saveResult("data/membrane/test",results)
+
+
+
+# import tensorflow as tf
+config = tf.ConfigProto()
+config.gpu_options.allow_growth = True
+sess = tf.Session(config=config)
+# num_CPU = 1 
+# num_GPU = 0
+
+# config = tf.ConfigProto(intra_op_parallelism_threads=num_cores,
+#                         inter_op_parallelism_threads=num_cores, 
+#                         allow_soft_placement=True,
+#                         device_count = {'CPU' : num_CPU,
+#                                         'GPU' : num_GPU}
+#                        )
+
+# session = tf.Session(config=config)
+# K.set_session(session)
+
+## Grab images from the images_to_predict folder
+>>>>>>> d34310edcfa238e7ad10115bc5cd79970a1ed2a1
 image_list_input = []
 for filename in glob.glob('images_to_predict/input/*.png'):
     image_list_input.append(filename)
