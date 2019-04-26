@@ -4,6 +4,8 @@ Using CNN to convert from SDR to HDR
 ## Installing Python
 Please install python3.X, either directly, or through Anaconda
 
+If python2.X already exists on the computer it is required for the user to specify python3 instead of python in the terminal
+
 ## PIP Packages to install (dependencies)
 1. Pillow
 2. Keras
@@ -29,12 +31,6 @@ from tensorflow.python.client import device_lib
 print(device_lib.list_local_devices())
 ~~~~
 
-## Running the file
-
-~~~~
-python3 main.py
-~~~~
-
 ## Inserting Training Set (For training use only)
 Due to the large size of the training dataset, the images are not included in the repository.
 Please insert the input images from the SDR Virtual Camera to the directory
@@ -46,6 +42,14 @@ Correspondingly, the output images should go to
 ~~~~
 ./data/train/output1/output/
 ~~~~
+
+## Running Training (GPU is highly recommended)
+Run in the terminal (Linux / MacOS) or Powershell (Windows)
+
+~~~~
+python main.py
+~~~~
+
 
 
 ## Running Prediction
