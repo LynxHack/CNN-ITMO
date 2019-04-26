@@ -30,6 +30,7 @@ sess = tf.Session(config=config)
 # 	print('model not found, creating a new model')
 # 	model = U_net()
 model = U_net()
+# model = load_model('saved4-model-456-0.65.hdf5')
 # train_generator = image_gen(inputfile='data/train/input/*.png', 
 # 							outputfile='data/train/output/*.png',
 # 							n_chunks=2,model = model) ## save once per train batch in case of closing halfway
@@ -38,8 +39,7 @@ model = U_net()
 # 							outputfile='data/test/output/*.png',
 # 							n_chunks=1)
 
-data_gen_args = dict(featurewise_center=True,
-					 rescale=1. / 255,
+data_gen_args = dict(rescale=1. / 255,
                      rotation_range=90,
 					 horizontal_flip=True,
 					 vertical_flip=True,
@@ -90,14 +90,14 @@ testmask_generator = mask_datagen.flow_from_directory(
 test_generator = zip(testimage_generator, testmask_generator)
 csv_logger = CSVLogger('log.csv', append=True, separator=';')
 
-filepath = "saved-model-{epoch:02d}-{val_acc:.2f}.hdf5"
+filepath = "saved5-model-{epoch:02d}-{val_acc:.2f}.hdf5"
 checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=False, mode='max')
 
 model.fit_generator(generator=train_generator,
 					validation_data=test_generator,
-					validation_steps = 100,
-					steps_per_epoch=2400,
-					epochs=20,
+					validation_steps = 1,
+					steps_per_epoch=4,
+					epochs=1000,
 					verbose=1,
 					callbacks=[csv_logger, checkpoint])
 
