@@ -1,5 +1,3 @@
-## TODO, write training code
-
 from model import *
 # from datagen import *
 from keras.preprocessing.image import ImageDataGenerator
@@ -35,16 +33,8 @@ import tensorflow as tf
 # except:
 # 	print('model not found, creating a new model')
 # 	model = U_net()
-<<<<<<< HEAD
 model = U_net()
-# model = load_model('saved4-model-456-0.65.hdf5')
-# train_generator = image_gen(inputfile='data/train/input/*.png', 
-# 							outputfile='data/train/output/*.png',
-# 							n_chunks=2,model = model) ## save once per train batch in case of closing halfway
-=======
->>>>>>> d34310edcfa238e7ad10115bc5cd79970a1ed2a1
-
-model = load_model("saved6-model-136-0.77.hdf5")
+# model = load_model("saved6-model-136-0.77.hdf5")
 
 # model.save('itmo.h5')  # creates a HDF5 file 'my_model.h5'
 def makePrediction(epoch, logs) :
@@ -77,39 +67,6 @@ def makePrediction(epoch, logs) :
 
 			openimg.close()
 testmodelcb = keras.callbacks.LambdaCallback(on_epoch_end=makePrediction)
-# cust_train_generator = image_gen(inputfile='data/train/input1/input/*.png', 
-# 							outputfile='data/train/output1/output/*.png',
-# 							n_chunks=2) ## save once per train batch in case of closing halfway
-
-# cust_test_generator = validation_image_gen(inputfile='data/test/input1/input/*.png', 
-# 							outputfile='data/test/output1/output/*.png',
-# 							n_chunks=1)
-
-<<<<<<< HEAD
-data_gen_args = dict(rescale=1. / 255,
-                     rotation_range=90,
-					 horizontal_flip=True,
-					 vertical_flip=True,
-                     zoom_range=0.2)
-=======
-# while(True):
-# X2, y2 = next(cust_train_generator)
-
-# X, y = next(cust_test_generator)
-
-# test_generator = zip(testimage_generator, testmask_generator)
-# csv_logger = CSVLogger('log.csv', append=True, separator=';')
-
-# index = 0
-# while True:
-# 	while index <= 1000:
-# 		X2, y2 = next(cust_train_generator)
-# 		X, y = next(cust_test_generator)
-# 		train_history = model.fit(X2, y2, epochs = 1, verbose=1, validation_data = (X2,y2), callbacks=[csv_logger])
-# 		index = index + 1
-# 		print(index)
-# 	index = 0
-# 	model.save("epoch"+str(index)+".hdf5")
 
 data_gen_args = dict(rescale=1. / 255,
 					rotation_range = 90,
@@ -117,7 +74,6 @@ data_gen_args = dict(rescale=1. / 255,
 					vertical_flip=True,
 					zoom_range=0.2,
 )
->>>>>>> d34310edcfa238e7ad10115bc5cd79970a1ed2a1
 
 image_datagen = ImageDataGenerator(**data_gen_args)
 mask_datagen = ImageDataGenerator(**data_gen_args)
@@ -164,15 +120,6 @@ testmask_generator = mask_datagen.flow_from_directory(
 test_generator = zip(testimage_generator, testmask_generator)
 csv_logger = CSVLogger('log.csv', append=True, separator=';')
 
-<<<<<<< HEAD
-filepath = "saved5-model-{epoch:02d}-{val_acc:.2f}.hdf5"
-checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=False, mode='max')
-
-model.fit_generator(generator=train_generator,
-					validation_data=test_generator,
-					validation_steps = 1,
-					steps_per_epoch=4,
-=======
 filepath = "saved7-model-{epoch:02d}-{val_acc:.2f}.hdf5"
 checkpoint = ModelCheckpoint(filepath, verbose=1, save_best_only=False, mode='max')
 
@@ -180,7 +127,7 @@ model.fit_generator(generator=train_generator,
 					validation_data=test_generator,
 					validation_steps = 100,
 					steps_per_epoch=1000,
->>>>>>> d34310edcfa238e7ad10115bc5cd79970a1ed2a1
 					epochs=1000,
 					verbose=1,
 					callbacks=[csv_logger, checkpoint, testmodelcb])
+
