@@ -1,6 +1,8 @@
 # CNN-ITMO
 Using CNN to convert from SDR to HDR
 
+![U-net Architecture](architecture.png)
+
 ## Installing Python
 Please install python3.X, either directly, or through Anaconda
 
