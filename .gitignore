@@ -3,6 +3,4 @@
 # data
 keras
 PIL
-
-*.hdf5
-*.png
+data
